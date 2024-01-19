@@ -1,0 +1,99 @@
+MINIKUBE SETUP SCRIPT
+
+sudo apt-get update
+sudo apt-get upgrade -y
+
+# Install Docker
+sudo apt-get install -y docker.io
+sudo systemctl enable --now docker
+
+# Install kubectl
+sudo apt-get install -y kubectl
+
+# Download and install Minikube
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube_latest_amd64.deb
+sudo dpkg -i minikube_latest_amd64.deb
+rm minikube_latest_amd64.deb
+
+# adding user in group
+sudo usermod -aG docker $USER && newgrp docker
+
+# Start Minikube with Docker driver
+minikube start --driver=docker
+
+# Verify Minikube status
+minikube status
+------------------------------------------------------------------------------- 
+
+ANSIBLE SETUP STEPS
+1.wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+2.yum install [package]
+3.yum update -y
+4.yum install git python python-level python-pip ansible openssl -y
+5i.vi /etc/ansible/hosts
+
+# Ex 1: Ungrouped hosts, specify before any group headers.
+    -----here----
+## green.example.com
+## blue.example.com
+## 192.168.100.1
+i## 192.168.100.10
+
+5.[dev]
+172.31.41.233
+172.31.45.64
+6.vi /etc/ansible/ansible.cfg
+#inventory   ------uncommit
+#sudo user  -------uncommit
+7.adduser atef
+passwd atef
+root
+8. visudo                                while doing this be as rootuser
+allow root to run any.....
+atif  ALL=(ALL)  NOPASSWD: ALL          
+
+
+9.vi /etc/ssh/sshd_config                do this in master and all nodes                           
+permission root login  yes-----uncommit
+passwdauthentication   yes-----uncommit
+pswdauthentication     no ----commented               
+10.service sshd restart
+
+11. ssh-keygen                        generete key
+12. ssh-copy-id atif@privateipofnode
+                    @privateipofnode
+switch to atef user first
+13. ssh private ip
+  -----------------------------------------------------------------
+****HOST PATTERN
+ansible all --list-hosts
+ansible dev[0] --list-hosts
+ansible dev[1] --list-hosts
+ansible dev[-1] --list-hosts
+ansible dev[0:1] --list-hosts
+ansible dev -a "ls"
+***AD-HOC COMMAND {simple linux command}
+ansible dev -a 'ls'
+ansible dev [0] -a "touch filezzz"
+ansible dev [0:a] -a "mkdir mydir1"
+ansible all -a "touch myfile.txt"
+ansible dev -a "ls-al" 
+ansible dev -a "sudo yum install httpd -y"
+ansible dev -a "sudo yum remove httpd -y"
+            or
+ansible dev -ba "sudo yum install httpd -y"
+ansible dev -ba "sudo yum remove httpd -y"
+
+*** MODULES
+
+
+ansible dev -b -m yum -a "pkg=httpd state=present"
+ansible dev -b -m yum -a "pkg=httpd state=latest"
+ansible dev -b -m yum -a "pkg=httpd state=absent"
+ansible dev -b -m service -a "name=httpd state=started"
+ansible dev -b -m user -a "name=devops"
+ansible dev -b -m copy -a "src=filezzz dest=/tmp"
+ansible dev -m setup
+ansible dev -m setup -a "filter=*ipv4*"
+
+***PLAYBOOK
